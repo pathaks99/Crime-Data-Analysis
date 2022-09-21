@@ -1,0 +1,124 @@
+Q1. What is the major reason people being kidnapped in each and every state?
+ANS :
+DELETE FROM PROJECT_1
+WHERE Sub_Group_Name LIKE "%TOTAL%" ;
+SELECT mainq.Area_Name ,substr(mainq.Sub_Group_Name,4,15) as Sub_Group,
+		(mainq.Grand_Total) FROM
+		(Select DISTINCT (Area_Name) , (Sub_Group_Name),
+		sum (K_A_Grand_Total) as Grand_Total
+ FROM "PROJECT_1" 
+ GROUP by Area_Name, Sub_Group_Name
+ order by sum (K_A_Grand_Total) DESC 
+ ) as  mainq where Area_Name is NOT NULL 
+ GROUP by mainq.Area_Name , Year
+ order BY mainq.Grand_total DESC ;
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Q2. Offenders relation to the rape victim.
+ANS :
+SELECT PROJECT_2_1.Area_Name,PROJECT_2_1.YEAR,PROJECT_2_1.SUBGROUP , PROJECT_2_2.No_of_Cases_in_which_offenders_were_Neighbours AS NEIGHBOURS ,
+ PROJECT_2_2.No_of_Cases_in_which_offenders_were_Other_Known_persons AS KNOWN_PERSON,
+PROJECT_2_2.No_of_Cases_in_which_offenders_were_Parentsclose_family_members AS PARENTCLOSE_FAMILY_MEMBER,
+ PROJECT_2_2.No_of_Cases_in_which_offenders_were_Relatives AS RELATIVES , 
+ PROJECT_2_2.No_of_Cases_in_which_offenders_were_known_to_the_Victims AS KNOWN_TO_VICTIMS
+FROM PROJECT_2_1
+INNER JOIN PROJECT_2_2
+ON PROJECT_2_1.Area_Name = PROJECT_2_2.Area_Name
+WHERE Subgroup LIKE "TOTAL RAPE VICTIMS"
+GROUP BY PROJECT_2_1.Area_Name , PROJECT_2_1.YEAR
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Q3. Juveniles family background, education and economic setup.
+ANS :
+SELECT T1.Area_Name,T1.Year,
+sum(T1.Education_Total) AS "JUVENILES_PURSUING_EDUCATION" ,
+sum(T2.Economic_Set_up_Total) AS "ECONOMIC_BACKGROUND_JUVENILES" ,
+sum(T3.Family_back_ground_Total - T3.Family_back_ground_Homeless) AS "FAMILY_BACKGROUND_JUVENILES" ,
+sum(T3.Family_back_ground_Homeless) AS "HOMELESS_JUVENILES" 
+FROM "PROJECT_EDUCATION" AS T1
+JOIN "PROJECT_ECONOMIC_SETUP" AS T2
+ON T1.Area_Name = T2.Area_Name 
+JOIN "PROJECT_FAMILY_BACKGROUND" AS T3 
+ON T2.Area_Name = T3.Area_Name
+GROUP BY T1.Area_Name,T1.Year ;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q4. Which state has more crime against children and women?
+ANS :
+SELECT TC."STATE/UT" , TC."Total_Crimes_Against_Children" , TC."Total_Crimes_Against_Women"
+FROM
+(SELECT t1."STATE/UT" ,
+		sum (t1.Total_Crimes + t2.Total_Crimes) 
+		As "Total_Crimes_Against_Children" ,
+		sum(T3.Rape + T3.KidnappingandAbduction + T3.DowryDeaths +
+		T3.Assaultonwomenwithintenttooutragehermodesty+T3.InsulttomodestyofWomen+
+        T3.CrueltybyHusbandorhisRelatives + T3.ImportationofGirls + T4.Rape + T4.KidnappingandAbduction +
+		T4.DowryDeaths + T4.Assaultonwomenwithintenttooutragehermodesty + 
+		T4.InsulttomodestyofWomen + T4.CrueltybyHusbandorhisRelatives + 
+		T4.ImportationofGirls)as "Total_Crimes_Against_Women"
+FROM "03_District_wise_crimes_committed_against_children_2001_2012" as t1
+INNER join "03_District_wise_crimes_committed_against_children_2013" as t2
+on t1.DISTRICT = t2.DISTRICT
+INNER JOIN "42_District_wise_crimes_committed_against_women_2001_2012" as T3
+ ON t2.DISTRICT = T3.DISTRICT 
+ INNER JOIN "42_District_wise_crimes_committed_against_women_2013" as T4
+ on T3.DISTRICT = T4.DISTRICT
+ WHERE t1.DISTRICT NOT like '%TOTAL%'
+GROUP by t1."STATE/UT"
+ORDER BY Total_Crimes_Against_Children DESC
+) as TC ;
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Q5. Age group wise murder victim.
+ANS:
+SELECT Area_Name,YEAR,Group_Name ,SUM(Victims_Above_50_Yrs) AS ABOVE_50_YEARS ,SUM(Victims_Total) AS VICTIMS_TOTAL,SUM(Victims_Upto_10_15_Yrs) AS UPTO_10_15_YEARS,
+SUM(Victims_Upto_10_Yrs) AS UPTO_10_YEARS,
+SUM(Victims_Upto_15_18_Yrs) AS UPTO_15_18_YEARS,SUM(Victims_Upto_18_30_Yrs) AS UPTO_18_30_YEARS,SUM(Victims_Upto_30_50_Yrs) AS UPTO_30_50_YEARS
+FROM PROJECT_5
+GROUP BY Area_Name,YEAR ;
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Q6. Crime by place of occurrence.
+ANS:
+WITH PROJECT_6 AS 
+(SELECT * FROM PROJECT_6_1
+UNION ALL
+SELECT * FROM PROJECT_6_2) 
+SELECT "STATE/UT",Year,
+sum("RESIDENTIALPREMISES-Burglary"+"RESIDENTIALPREMISES-Dacoity"+"RESIDENTIALPREMISES-Robbery"+"RESIDENTIALPREMISES-Theft") AS "RESIDENTIAL_PREMISES" ,
+sum("HIGHWAYS-Burglary"+"HIGHWAYS-Dacoity"+"HIGHWAYS-Robbery"+"HIGHWAYS-Theft") AS "HIGHWAYS" ,
+sum("RIVERandSEA-Burglary"+"RIVERandSEA-Dacoity"+"RIVERandSEA-Robbery"+"RIVERandSEA-Theft") AS "RIVER_AND_SEA" ,
+sum("RAILWAYS-Burglary"+"RAILWAYS-Dacoity"+"RAILWAYS-Robbery"+"RAILWAYS-Theft") AS "RAILWAY" ,
+sum("BANKS-Burglary"+"BANKS-Dacoity"+"BANKS-Robbery"+"BANKS-Theft") AS "BANKS" ,
+sum("COMMERCIALESTABLISHMENTS-Burglary"+"COMMERCIALESTABLISHMENTS-Dacoity"+"COMMERCIALESTABLISHMENTS-Robbery"+"COMMERCIALESTABLISHMENTS-Theft") AS "COMMERCIAL_ESTABLISHMENT" ,
+sum("OTHERPLACES-Burglary"+"OTHERPLACES-Dacoity"+"OTHERPLACES-Robbery"+"OTHERPLACES-Theft") AS "OTHER_PLACES"
+FROM PROJECT_6
+GROUP BY YEAR,"STATE/UT" ;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q7. Anti corruption cases vs arrests.
+ANS:
+SELECT DISTINCT PROJECT_7_1.Area_Name, PROJECT_7_1.YEAR , PROJECT_7_1.AC02_No_of_cases_registered_during_the_year AS "CASES REGD", 
+PROJECT_7_2.ACA02_No_of_persons_arrested_during_the_year AS "ARRESTED CRIMINAL"
+FROM "PROJECT_7_1" 
+INNER JOIN "PROJECT_7_2" 
+ON PROJECT_7_1.Area_Name = PROJECT_7_2.Area_Name
+GROUP BY PROJECT_7_1.Area_Name  
+ORDER BY PROJECT_7_1.AC02_No_of_cases_registered_during_the_year  DESC ;
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Q8. Which state has more number of complaints against police?
+ANS :
+SELECT DISTINCT Area_Name  , SUM("CPA_-_Complaints_Received/Alleged") AS "COMPLAINT RECEIVED"
+FROM PROJECT_8
+GROUP BY Area_Name
+ORDER BY "CPA_-_Complaints_Received/Alleged" DESC ;
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Q9. Which state is the safest for foreigners?
+ANS :
+SELECT 
+IPC_2001_2012."STATE/UT" ,
+sum(IPC_2001_2012.TOTALIPCCRIMES) AS "TOTAL_CRIMES_2001_2012" , sum(IPC_2013.TOTALIPCCRIMES) AS "TOTAL_CRIMES_2013" , sum(IPC_2014.TotalCognizableIPCcrimes)
+As "Total_Crimes_2014"
+from IPC_2001_2012 
+join IPC_2013
+on IPC_2001_2012."District" = IPC_2013."District" 
+join IPC_2014 
+on IPC_2001_2012."District" = IPC_2014."District"
+GROUP BY IPC_2001_2012."STATE/UT"
+ORDER BY TOTAL_CRIMES_2001_2012 ASC ;
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
